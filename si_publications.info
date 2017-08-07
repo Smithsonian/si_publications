@@ -1,0 +1,4 @@
+name = SI Publications
+description = Imports SI publications for your unit from SI libraries
+core = 7.x
+configure = admin/content/publications/settings

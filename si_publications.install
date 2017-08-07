@@ -1,0 +1,12 @@
+<?php
+/**
+ * Implements hook_uninstall().
+ */
+function si_publications_uninstall() {
+  variable_del('si_publications_scientist_ct');
+  variable_del('si_publications_si_profile_field');
+  variable_del('si_publications_recent_papers_field');
+  variable_del('si_publications_cron_switch');
+  variable_del('si_publications_papers_quantity');
+  variable_del('si_publications_altmetric_switch');
+}
