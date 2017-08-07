@@ -2,3 +2,8 @@ name = SI Publications
 description = Imports SI publications for your unit from SI libraries
 core = 7.x
 configure = admin/content/publications/settings
+
+; Package info
+version = "7.x-1.0"
+project = "si_publications"
+project status url = http://wsd.si.edu/release-history
