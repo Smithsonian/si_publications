@@ -8,7 +8,9 @@ This module was written by Anthony Braun at NZP. If you have any questions or wa
 
     
 ### REQUIREMENTS
- You must have created a "scientist" content type, which must contain a text field for the scientist's SI Profiles ID and an unlimited value, long text, HTML-enabled field for recent papers
+ You must have created a "scientist" content type (it can be named anything you would like). This content type MUST contain the following two fields:
+ 1. A text field for the scientist's SI Profiles ID. This can be named anything, but it must be a text field.
+ 2. A longtext field for recent papers. This must allow unlimited values and it must be HTML-enabled. Again, the name does not matter.
 
 ### INSTALLATION
  Install as usual, see http://drupal.org/documentation/install/modules-themes/modules-7 for further information
