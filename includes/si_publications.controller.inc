@@ -244,17 +244,12 @@ function add_altmetric() {
     drupal_add_css(
       '
       .altmetricIcon {
-        // display:none;
         float:right;
       }
 
       .altmetricIcon img {
         float: right;
         margin-left: 25px !important;
-      }
-
-      .altmetric-popover {
-        // left: 0 !important;
       }
       '
       , 'inline'
