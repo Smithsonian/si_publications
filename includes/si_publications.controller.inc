@@ -195,7 +195,7 @@ function si_publications_get_all_papers($node) {
 
   //grab the si profiles ID and get the papers from SIL
   $si_profiles_id = $node->{$si_profile_field}['und'][0]['value'];
-  $url = 'http://research.si.edu/export/srb_search_export_action.cfm?search_term=' . $si_profiles_id . '&submit=Export+data&date=&limit=authorID&format=JSON&Unit=All&count=2500';
+  $url = 'http://prism.si.edu/sil/researchbib/srb_search_export_action.cfm?search_term=' . $si_profiles_id . '&submit=Export+data&date=&limit=authorID&format=JSON&Unit=All&count=2500';
 
   $result = drupal_http_request($url);
 
