@@ -39,6 +39,7 @@ function si_publications_load_scientists() {
  *  
  */
 function si_publications_fetch($node) {
+
   //create static variables for efficiency
   $si_profile_field = &drupal_static('si_profile_field');
   if (!isset($si_profile_field)) {
@@ -97,13 +98,14 @@ function si_publications_fetch($node) {
             foreach($pub as $unformatted_pub) {
               //transform the array into a formatted string
               $formatted_pub = '<p class="paper-citation">' . si_publications_format($unformatted_pub) . '</p>';
-
               //add this paper to node if one of the following is true: (1) it is the first paper being added to an empty field (2) it is an additional paper ( ie no paper exists at this spot yet), or (3) if it is different from exisiting paper in this spot
-              if ( empty($node->{$recent_papers_field}) || !array_key_exists($n, $node->{$recent_papers_field}[$node->language]) || $formatted_pub != $node->{$recent_papers_field}[$node->language][$n]['value'] ) {
-                $node->{$recent_papers_field}[$node->language][$n] = array(
-                  'value' => $formatted_pub,
+              if ( empty($node->{$recent_papers_field}) || !array_key_exists($n, $node->{$recent_papers_field}[LANGUAGE_NONE]) || $formatted_pub != $node->{$recent_papers_field}[LANGUAGE_NONE][$n]['value'] ) {
+
+                $node->{$recent_papers_field}[LANGUAGE_NONE][$n] = array(
+                  'value' => t($formatted_pub),
                   'format' => 'full_html',
                   );
+
                 //a paper was changed so we will need to save the node
                 $updated = TRUE;
               }
@@ -113,8 +115,8 @@ function si_publications_fetch($node) {
         }
       }
       // clear any remaining publications above the paper quanity limit that exist in the db
-      while ( array_key_exists($n, $node->{$recent_papers_field}[$node->language]) ) {
-        unset($node->{$recent_papers_field}[$node->language][$n]);
+      while ( array_key_exists($n, $node->{$recent_papers_field}[LANGUAGE_NONE]) ) {
+        unset($node->{$recent_papers_field}[LANGUAGE_NONE][$n]);
         $n++;
         $updated = TRUE;
       }
