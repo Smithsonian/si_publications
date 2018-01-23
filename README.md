@@ -58,5 +58,7 @@ JAK Modifications to si_publications.controller.inc
 
 ~ line 107: Changed format from 'full_html' to '2'. [This is because my test website was migrated from Drupal 6 to D7.
 	In D6 the full HTML format is coded as '2'. A D7 website that starts out as a D7 website codes the full HTML format as 'full_html'.]
+
 ~ lines 158-163: Added code to have Altmetric badges added to each recent paper in each scientist node.
+
 ~ lines 227-229: Edited lines of code to make sure Altmetric badges are not duplicated on All Papers page.
