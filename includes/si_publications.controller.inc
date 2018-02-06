@@ -59,7 +59,8 @@ function si_publications_fetch($node) {
   $author_id = $node->{$si_profile_field}['und'][0]['value'];
 
   //set up SIL API call
-  $url = 'http://prism.si.edu/sil/researchbib/srb_search_export_action.cfm';
+  //$url = 'http://prism.si.edu/sil/researchbib/srb_search_export_action.cfm';
+  $url = 'http://staff.research.si.edu/srb_search_export_action.cfm';
   $data = array(
     'search_term' =>  $author_id,
     // 'submit' => 'Export+data',
@@ -103,7 +104,7 @@ function si_publications_fetch($node) {
 
                 $node->{$recent_papers_field}[LANGUAGE_NONE][$n] = array(
                   'value' => t($formatted_pub),
-                  'format' => 'full_html',
+                  'format' => '2', //'full_html',
                   );
 
                 //a paper was changed so we will need to save the node
@@ -153,12 +154,13 @@ function si_publications_format($unformatted_pub) {
   $title      = $unformatted_pub['title'];
   //if a repository link exists, wrap the title in it
   $title      = isset($unformatted_pub['link']) ? ( '<a href="' . $unformatted_pub['link'] . '">' . $title . '</a>' ) : $title;
-  $doi        = isset($unformatted_pub['doi']) ?   (' <a href="' . $unformatted_pub['doi'] . '">' . $unformatted_pub['doi'] . '</a>' ) : null;
+  $doi        = isset($unformatted_pub['doi']) ?   (' <a href="' . $unformatted_pub['doi'] . '">' . $unformatted_pub['doi'] . '</a>' ) : null;  
   $pages      = isset($unformatted_pub['pages']) ? (', ' . $unformatted_pub['pages']) : null;
   $journal    = isset($unformatted_pub['journal']) ? ( '<em>' . $unformatted_pub['journal'] . '</em>' ) : null;
-
+  $altmetric_set = add_altmetric();
+  $altmetric  = ($altmetric_set && isset($unformatted_pub['doi'])) ? '<div id="show_metric" class="altmetric-embed altmetricIcon" data-badge-type="donut" data-badge-popover="left" data-hide-no-mentions="true" data-doi="' . $doi_stripped = str_replace('http://dx.doi.org/', '', $unformatted_pub['doi']) . '"></div>' : null;
   //put the paper reference in our format
-  $formatted_pub = $authors . ' ' . $date . '. ' . '<strong>' . $title . '</strong>. ' . $journal . $pages . '.' . $doi;
+  $formatted_pub = $altmetric . $authors . ' ' . $date . '. ' . '<strong>' . $title . '</strong>. ' . $journal . $pages . '.' . $doi;
   return $formatted_pub; 
 }
 
@@ -197,7 +199,8 @@ function si_publications_get_all_papers($node) {
 
   //grab the si profiles ID and get the papers from SIL
   $si_profiles_id = $node->{$si_profile_field}['und'][0]['value'];
-  $url = 'http://prism.si.edu/sil/researchbib/srb_search_export_action.cfm?search_term=' . $si_profiles_id . '&submit=Export+data&date=&limit=authorID&format=JSON&Unit=All&count=2500';
+  // $url = 'http://prism.si.edu/sil/researchbib/srb_search_export_action.cfm?search_term=' . $si_profiles_id . '&submit=Export+data&date=&limit=authorID&format=JSON&Unit=All&count=2500';
+  $url = 'http://staff.research.si.edu/srb_search_export_action.cfm?search_term=' . $si_profiles_id . '&submit=Export+data&date=&limit=authorID&format=JSON&Unit=All&count=2500';
 
   $result = drupal_http_request($url);
 
@@ -221,8 +224,9 @@ function si_publications_get_all_papers($node) {
       foreach($pub as $unformatted_pub) {
         //transform the array into a formatted string
         $formatted_pub = si_publications_format($unformatted_pub);
-        $altmetric  = ($altmetric_set && isset($unformatted_pub['doi'])) ? '<div id="show_metric" class="altmetric-embed altmetricIcon" data-badge-type="donut" data-badge-popover="left" data-hide-no-mentions="true" data-doi="' . $doi_stripped = str_replace('http://dx.doi.org/', '', $unformatted_pub['doi']) . '"></div>' : null;
-        $all_papers .= '<p class="paper-citation">' . $altmetric . $formatted_pub . '</p>';
+        // $altmetric  = ($altmetric_set && isset($unformatted_pub['doi'])) ? '<div id="show_metric" class="altmetric-embed altmetricIcon" data-badge-type="donut" data-badge-popover="left" data-hide-no-mentions="true" data-doi="' . $doi_stripped = str_replace('http://dx.doi.org/', '', $unformatted_pub['doi']) . '"></div>' : null;
+        // $all_papers .= '<p class="paper-citation">' . $altmetric . $formatted_pub . '</p>';
+		$all_papers .= '<p class="paper-citation">' . $formatted_pub . '</p>';
       }
     }
   }
