@@ -72,7 +72,7 @@ function si_publications_settings_form($form, &$form_state) {
     '#title' => t('Your Recent Papers field'),
     '#options' => !empty($longtext_fields) ? $longtext_fields : array(t('N/A')),
     '#default_value' => $recent_papers_field,
-    '#description' => !empty($longtext_fields) ? t('Select your Recent Papers field. <strong>It must be an unlimited value Long Text field. It also must allow HTML for formatting purposes.</strong>') : t('The content type "@ct" does not contain any long text fields. Please add one.', array('@ct' => $scientist_ct)),
+    '#description' => !empty($longtext_fields) ? t('Select your Recent Papers field. <strong>It must be an unlimited value Long Text field. It also must allow HTML for formatting purposes.</strong>') : t('The content type "@ct" does not contain any long text, HTML-enabled, multivalue fields. Please add one. See the module readme for more information', array('@ct' => $scientist_ct)),
     // '#required' => TRUE,
     '#disabled' => empty($longtext_fields) ? TRUE : FALSE,
   );
@@ -176,11 +176,12 @@ function si_publications_import_form($form, &$form_state) {
 function si_publications_import_form_submit($form, &$form_state) {
   //get staff nodes
   module_load_include('inc', 'si_publications', 'includes/si_publications.controller');
-  $staff_list = si_publications_load_scientists();
+  $scientist_nids = si_publications_load_scientists();
+  $nodes = node_load_multiple($scientist_nids);
 
-  //fetch publications for each staff member
-  foreach ($staff_list as $scientist) {
-    $result = si_publications_fetch($scientist);
+  //fetch publications for each scientist
+  foreach ($nodes as $node) {
+    $result = si_publications_fetch($node);
     drupal_set_message($result);
   }
 }

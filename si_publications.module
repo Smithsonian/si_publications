@@ -98,16 +98,18 @@ function get_all_papers_title($node) {
  * processing. It gets called every time the Drupal cron runs and must decide
  * what it will do.
  *
+ * For this module, we add the list of scientist node IDs that have SI profiles IDs, but only if the queue is empty. We want all scientists to be processed before we add new ones.
  */
 function si_publications_cron() {
-   if (variable_get('si_publications_cron_switch') == 1) {
+   $queue = DrupalQueue::get('si_publications');
+   $queue_length = $queue->numberOfItems();
+   if (variable_get('si_publications_cron_switch') == 1 && $queue_length == 0) {
       module_load_include('inc', 'si_publications', 'includes/si_publications.controller');
-      $items = si_publications_load_scientists();
-
+      // load list of scientists with si profiles IDs
+      $nids = si_publications_load_scientists();
       // Put everything in a queue for processing.
-      $queue = DrupalQueue::get('si_publications'); 
-      foreach($items as $item) { 
-        $queue->createItem($item); 
+      foreach($nids as $nid) { 
+        $queue->createItem($nid); 
       } 
    }
  }
@@ -121,9 +123,11 @@ function si_publications_cron_queue_info() {
   return $queues;
 }
 
-function si_publications_cron_worker($item) {
+function si_publications_cron_worker($nid) {
+  // load the scientist node
+  $node = node_load($nid);
   module_load_include('inc', 'si_publications', 'includes/si_publications.controller');
-  si_publications_fetch($item);
+  si_publications_fetch($node);
 }
 
 /**

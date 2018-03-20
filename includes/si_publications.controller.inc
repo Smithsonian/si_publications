@@ -6,7 +6,7 @@
  */
 
 /**
- * Loads scientist nodes that have their SI Profile ID field != NULL and returns them as an array of node objects
+ * Loads scientist nodes that have their SI Profile ID field != NULL and returns them as an array of nids
  *  
  */
 function si_publications_load_scientists() {
@@ -24,8 +24,7 @@ function si_publications_load_scientists() {
           ;
     $result = $query->execute();
     $nids = array_keys($result['node']);
-    $staff = node_load_multiple($nids);
-    return $staff;
+    return $nids;
   }   
   else
   {
@@ -58,7 +57,7 @@ function si_publications_fetch($node) {
   $author_id = $node->{$si_profile_field}['und'][0]['value'];
 
   //set up SIL API call
-  $url = 'http://prism.si.edu/sil/researchbib/srb_search_export_action.cfm';
+  $url = 'http://staff.research.si.edu/srb_search_export_action.cfm';
   $data = array(
     'search_term' =>  $author_id,
     // 'submit' => 'Export+data',
@@ -98,7 +97,7 @@ function si_publications_fetch($node) {
               //transform the array into a formatted string
               $formatted_pub = '<p class="paper-citation">' . si_publications_format($unformatted_pub) . '</p>';
 
-              //add this paper to node if one of the following is true: (1) it is the first paper being added to an empty field (2) it is an additional paper ( ie no paper exists at this spot yet), or (3) if it is different from exisiting paper in this spot
+              //add this paper to node if one of the following is true: (1) it is the first paper being added to an empty field (2) it is an additional paper ( ie no paper exists at this spot yet), or (3) if it is different from existing paper in this spot
               if ( empty($node->{$recent_papers_field}) || !array_key_exists($n, $node->{$recent_papers_field}[$node->language]) || $formatted_pub != $node->{$recent_papers_field}[$node->language][$n]['value'] ) {
                 $node->{$recent_papers_field}[$node->language][$n] = array(
                   'value' => $formatted_pub,
@@ -120,10 +119,21 @@ function si_publications_fetch($node) {
       }
       //if any papers were changed, save the node
       if ($updated) {
+        
+        global $user; 
+        $original_user = $user; 
+        $old_state = drupal_save_session(); 
+        drupal_save_session(FALSE); 
+        $user = user_load(1); 
+
         node_save($node);
         $message = 'Successfully imported publications for ' . l($node->title, '/node/' . $node->nid, array('attributes' => array('target' => '_blank')));
         // drupal_set_message($message);
         watchdog('si_publications', $message);
+       
+        $user = $original_user; 
+        drupal_save_session($old_state); 
+       
         return $message;
       }
     }
@@ -154,9 +164,10 @@ function si_publications_format($unformatted_pub) {
   $doi        = isset($unformatted_pub['doi']) ?   (' <a href="' . $unformatted_pub['doi'] . '">' . $unformatted_pub['doi'] . '</a>' ) : null;
   $pages      = isset($unformatted_pub['pages']) ? (', ' . $unformatted_pub['pages']) : null;
   $journal    = isset($unformatted_pub['journal']) ? ( '<em>' . $unformatted_pub['journal'] . '</em>' ) : null;
-
+  $altmetric_set = add_altmetric();
+  $altmetric  = ($altmetric_set && isset($unformatted_pub['doi'])) ? '<div id="show_metric" class="altmetric-embed altmetricIcon" data-badge-type="donut" data-badge-popover="left" data-hide-no-mentions="true" data-doi="' . $doi_stripped = str_replace('http://dx.doi.org/', '', $unformatted_pub['doi']) . '"></div>' : null;
   //put the paper reference in our format
-  $formatted_pub = $authors . ' ' . $date . '. ' . '<strong>' . $title . '</strong>. ' . $journal . $pages . '.' . $doi;
+  $formatted_pub = $altmetric . $authors . ' ' . $date . '. ' . '<strong>' . $title . '</strong>. ' . $journal . $pages . '.' . $doi;
   return $formatted_pub; 
 }
 
@@ -195,7 +206,7 @@ function si_publications_get_all_papers($node) {
 
   //grab the si profiles ID and get the papers from SIL
   $si_profiles_id = $node->{$si_profile_field}['und'][0]['value'];
-  $url = 'http://research.si.edu/export/srb_search_export_action.cfm?search_term=' . $si_profiles_id . '&submit=Export+data&date=&limit=authorID&format=JSON&Unit=All&count=2500';
+  $url = 'http://staff.research.si.edu/srb_search_export_action.cfm?search_term=' . $si_profiles_id . '&submit=Export+data&date=&limit=authorID&format=JSON&Unit=All&count=2500';
 
   $result = drupal_http_request($url);
 
@@ -219,14 +230,17 @@ function si_publications_get_all_papers($node) {
       foreach($pub as $unformatted_pub) {
         //transform the array into a formatted string
         $formatted_pub = si_publications_format($unformatted_pub);
-        $altmetric  = ($altmetric_set && isset($unformatted_pub['doi'])) ? '<div id="show_metric" class="altmetric-embed altmetricIcon" data-badge-type="donut" data-badge-popover="left" data-hide-no-mentions="true" data-doi="' . $doi_stripped = str_replace('http://dx.doi.org/', '', $unformatted_pub['doi']) . '"></div>' : null;
-        $all_papers .= '<p class="paper-citation">' . $altmetric . $formatted_pub . '</p>';
+        // $altmetric  = ($altmetric_set && isset($unformatted_pub['doi'])) ? '<div id="show_metric" class="altmetric-embed altmetricIcon" data-badge-type="donut" data-badge-popover="left" data-hide-no-mentions="true" data-doi="' . $doi_stripped = str_replace('http://dx.doi.org/', '', $unformatted_pub['doi']) . '"></div>' : null;
+        // $all_papers .= '<p class="paper-citation">' . $altmetric . $formatted_pub . '</p>';
+        $all_papers .= '<p class="paper-citation">' . $formatted_pub . '</p>';
       }
     }
   }
   return $all_papers;
 }
 
+
+// Checks to see whether the 'add altmetric' option is checked and if so, adds necessary code and styling then returns TRUE
 function add_altmetric() {
   $altmetric_set = &drupal_static('altmetric_set');
   if (!isset($altmetric_set)) {
@@ -256,4 +270,5 @@ function add_altmetric() {
     );
     return TRUE;
   }
+  else return FALSE;
 }
