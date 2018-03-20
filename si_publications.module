@@ -146,11 +146,45 @@ function si_publications_node_view($node) {
     $recent_papers_field = variable_get('si_publications_recent_papers_field');
   
     //we only want to add all papers link on scientists that both have a si profiles ID and some recent papers
-    if (!empty($node->$si_profile_field) && !empty($node->$recent_papers_field) ) {
+    if (!empty($node->$si_profile_field) && !empty($node->{$recent_papers_field}) ) {
       $link_to_papers = '/' . current_path() . '/all-papers';
       $node->content[$recent_papers_field]['#suffix'] = '<div><a href="' . $link_to_papers . '">All Papers</a></div>';
 
-      //Todo (maybe): if altmetric is enabled, add it.
+      // If altmetric is enabled, add it.
+      add_altmetric();
     }
   }
+}
+
+// Checks to see whether the 'add altmetric' option is checked and if so, adds necessary code and styling then returns TRUE
+function add_altmetric() {
+  $altmetric_set = &drupal_static('altmetric_set');
+  if (!isset($altmetric_set)) {
+    $altmetric_set = variable_get('si_publications_altmetric_switch');
+  }
+
+  if ($altmetric_set) {
+     //add altmetric external js file
+    drupal_add_js('https://d1bxh8uas1mnw7.cloudfront.net/assets/embed.js', array(
+      'scope' => 'header',
+      'type' => 'external',
+      'every_page' => FALSE,
+    ));
+
+    drupal_add_css(
+      '
+      .altmetricIcon {
+        float:right;
+      }
+
+      .altmetricIcon img {
+        float: right;
+        margin-left: 25px !important;
+      }
+      '
+      , 'inline'
+    );
+    return TRUE;
+  }
+  else return FALSE;
 }

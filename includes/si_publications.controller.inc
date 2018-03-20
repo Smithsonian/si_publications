@@ -166,8 +166,8 @@ function si_publications_format($unformatted_pub) {
   $doi        = isset($unformatted_pub['doi']) ?   (' <a href="' . $unformatted_pub['doi'] . '">' . $unformatted_pub['doi'] . '</a>' ) : null;
   $pages      = isset($unformatted_pub['pages']) ? (', ' . $unformatted_pub['pages']) : null;
   $journal    = isset($unformatted_pub['journal']) ? ( '<em>' . $unformatted_pub['journal'] . '</em>' ) : null;
-  $altmetric_set = add_altmetric();
-  $altmetric  = ($altmetric_set && isset($unformatted_pub['doi'])) ? '<div id="show_metric" class="altmetric-embed altmetricIcon" data-badge-type="donut" data-badge-popover="left" data-hide-no-mentions="true" data-doi="' . $doi_stripped = str_replace('http://dx.doi.org/', '', $unformatted_pub['doi']) . '"></div>' : null;
+  // Add altmeric code. Whether or not it actually appears will be controlled by the "add altmetric" option in settings. If checked, this module's implementation of hook_node_view will add the altmetric JS and CSS to make it appear
+  $altmetric  = isset($unformatted_pub['doi']) ? '<div id="show_metric" class="altmetric-embed altmetricIcon" data-badge-type="donut" data-badge-popover="left" data-hide-no-mentions="true" data-doi="' . $doi_stripped = str_replace('http://dx.doi.org/', '', $unformatted_pub['doi']) . '"></div>' : null;
   //put the paper reference in our format
   $formatted_pub = $altmetric . $authors . ' ' . $date . '. ' . '<strong>' . $title . '</strong>. ' . $journal . $pages . '.' . $doi;
   return $formatted_pub; 
@@ -239,38 +239,4 @@ function si_publications_get_all_papers($node) {
     }
   }
   return $all_papers;
-}
-
-
-// Checks to see whether the 'add altmetric' option is checked and if so, adds necessary code and styling then returns TRUE
-function add_altmetric() {
-  $altmetric_set = &drupal_static('altmetric_set');
-  if (!isset($altmetric_set)) {
-    $altmetric_set = variable_get('si_publications_altmetric_switch');
-  }
-
-  if ($altmetric_set) {
-     //add altmetric external js file
-    drupal_add_js('https://d1bxh8uas1mnw7.cloudfront.net/assets/embed.js', array(
-      'scope' => 'header',
-      'type' => 'external',
-      'every_page' => FALSE,
-    ));
-
-    drupal_add_css(
-      '
-      .altmetricIcon {
-        float:right;
-      }
-
-      .altmetricIcon img {
-        float: right;
-        margin-left: 25px !important;
-      }
-      '
-      , 'inline'
-    );
-    return TRUE;
-  }
-  else return FALSE;
 }
