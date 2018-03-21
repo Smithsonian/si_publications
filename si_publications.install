@@ -15,3 +15,13 @@ function si_publications_uninstall() {
   $queue = DrupalQueue::get('si_publications');
   $queue->deleteQueue();
 }
+
+/**
+ * Implements hook_update_N().
+ * Deletes module queue due to bug that was causing it to grow uncontrollably
+ */
+function si_publications_update_7100() {
+  // delete module queue
+  $queue = DrupalQueue::get('si_publications');
+  $queue->deleteQueue();
+}
