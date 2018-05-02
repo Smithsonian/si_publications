@@ -158,6 +158,7 @@ function si_publications_node_view($node) {
 
 // Checks to see whether the 'add altmetric' option is checked and if so, adds necessary code and styling then returns TRUE
 function add_altmetric() {
+  // create static variable for performance reasons
   $altmetric_set = &drupal_static('altmetric_set');
   if (!isset($altmetric_set)) {
     $altmetric_set = variable_get('si_publications_altmetric_switch');
@@ -170,7 +171,7 @@ function add_altmetric() {
       'type' => 'external',
       'every_page' => FALSE,
     ));
-
+    // Add styling to 
     drupal_add_css(
       '
       .altmetricIcon {
@@ -186,5 +187,15 @@ function add_altmetric() {
     );
     return TRUE;
   }
-  else return FALSE;
+   else {
+    drupal_add_css(
+      '
+      .altmetricIcon {
+        display:none;
+      }
+      '
+      , 'inline'
+    );
+    return FALSE;
+  }
 }
