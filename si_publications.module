@@ -69,6 +69,17 @@ function si_publications_menu() {
     'access callback' => TRUE
   );
 
+  $items['user/%node/all-papers'] = array(
+    // 'title' => t('All papers for @scientist'),
+    'title callback' => 'get_all_papers_title',
+    'title arguments' => array(1),
+    'description' => 'All papers description',
+    'page callback' => 'si_publications_get_all_papers',
+    'page arguments' => array(1),
+    'file' => 'includes/si_publications.controller.inc',
+    'access callback' => TRUE
+  );
+
   return $items;
 }
 
@@ -77,9 +88,15 @@ function si_publications_menu() {
  *
  */
 function get_all_papers_title($node) {
-  return t('All papers for @scientist' , array('@scientist' => $node->title));
-  
-  // Zoo specific code 
+  $scientist_ct = variable_get('si_publications_scientist_ct');
+  if ($scientist_ct == 'users') {
+    return t('All papers for @scientist' , array('@scientist' => $node->name));
+  }
+  else {
+    return t('All papers for @scientist' , array('@scientist' => $node->title));
+  }
+
+  // Zoo specific code
   ////add period to middle initial if any
   // $name_array = explode('-', $nid);
   // if ( count($name_array) == 3 && strlen($name_array[1]) == 1 )
@@ -108,9 +125,9 @@ function si_publications_cron() {
       // load list of scientists with si profiles IDs
       $nids = si_publications_load_scientists();
       // Put everything in a queue for processing.
-      foreach($nids as $nid) { 
-        $queue->createItem($nid); 
-      } 
+      foreach($nids as $nid) {
+        $queue->createItem($nid);
+      }
    }
  }
 
@@ -131,8 +148,8 @@ function si_publications_cron_worker($nid) {
 }
 
 /**
- * Implements hook_field_prepare_view().
- * 
+ * Implements hook_node_view().
+ *
  * Adds a link to "all publications" below each scientists "recent papers" field.
  */
 function si_publications_node_view($node) {
@@ -144,7 +161,7 @@ function si_publications_node_view($node) {
     //get profiles id field and recent papers field
     $si_profile_field = variable_get('si_publications_si_profile_field');
     $recent_papers_field = variable_get('si_publications_recent_papers_field');
-  
+
     //we only want to add all papers link on scientists that both have a si profiles ID and some recent papers
     if (!empty($node->$si_profile_field) && !empty($node->{$recent_papers_field}) ) {
       $link_to_papers = '/' . current_path() . '/all-papers';
@@ -155,6 +172,33 @@ function si_publications_node_view($node) {
     }
   }
 }
+
+/**
+ * Implements hook_user_view().
+ *
+ * Adds a link to "all publications" below each scientists "recent papers" field.
+ */
+function si_publications_user_view($node) {
+  // get scientist content type
+  $scientist_ct = variable_get('si_publications_scientist_ct');
+
+  // check that current node is a scientist
+  if ($scientist_ct == 'users') {
+    //get profiles id field and recent papers field
+    $si_profile_field = variable_get('si_publications_si_profile_field');
+    $recent_papers_field = variable_get('si_publications_recent_papers_field');
+
+    //we only want to add all papers link on scientists that both have a si profiles ID and some recent papers
+    if (!empty($node->$si_profile_field) && !empty($node->{$recent_papers_field}) ) {
+      $link_to_papers = '/' . current_path() . '/all-papers';
+      $node->content[$recent_papers_field]['#suffix'] = '<div><a href="' . $link_to_papers . '">All Papers</a></div>';
+
+      // If altmetric is enabled, add it.
+      add_altmetric();
+    }
+  }
+}
+
 
 // Checks to see whether the 'add altmetric' option is checked and if so, adds necessary code and styling then returns TRUE
 function add_altmetric() {
@@ -171,7 +215,7 @@ function add_altmetric() {
       'type' => 'external',
       'every_page' => FALSE,
     ));
-    // Add styling to 
+    // Add styling to
     drupal_add_css(
       '
       .altmetricIcon {
@@ -187,7 +231,7 @@ function add_altmetric() {
     );
     return TRUE;
   }
-   else {
+  else {
     drupal_add_css(
       '
       .altmetricIcon {

@@ -14,20 +14,39 @@ function si_publications_settings_form($form, &$form_state) {
   $si_profile_field = variable_get('si_publications_si_profile_field');
   $recent_papers_field = variable_get('si_publications_recent_papers_field');
 
+  $form['si_publications_api_url_field'] = array(
+    '#type' => 'textfield',
+    '#title' => t('URL to the API on the Smithsonian network. (default: http://staff.research.si.edu/search/) '),
+    '#required' => TRUE,
+    '#size' => 60,
+    '#default_value' => variable_get('si_publications_api_url_field', 'http://staff.research.si.edu/search/'),
+  );
+
+  $options = node_type_get_names();
+  $options['users'] = 'User Accounts';
+
   $form['si_publications_scientist_ct'] = array(
     '#type' => 'select',
       '#title' => t('Your Scientist Content Type'),
-      '#options' => node_type_get_names(),
+      '#options' => $options,
       '#default_value' => $scientist_ct,
       '#description' => t('Select your scientist content type. It should contain a text field for "SI Profile ID" and a long text field for "Recent Papers".'),
       '#required' => TRUE,
       '#attributes' => array('onChange' => 'this.form.submit();'),
   );
 
+  // get all fields, we will need this list twice.
+  $field_list = null;
+  if ($scientist_ct == 'users') {
+    $field_list = field_info_instances('user', 'user');
+  }
+  else {
+    $field_list = field_info_instances('node', $scientist_ct);
+  }
+
   //get a list of text fields on the scientist content type so user can pick SI Profile ID field
   $text_fields = array();
   if (!empty($scientist_ct)) {
-    $field_list = field_info_instances('node', $scientist_ct);
     foreach ($field_list as $field) {
       // we only want long text fields that have text processing enabled
       if ($field['widget']['type'] == 'text_textfield') {
@@ -48,11 +67,10 @@ function si_publications_settings_form($form, &$form_state) {
     '#disabled' => empty($text_fields) ? TRUE : FALSE,
     // '#required' => TRUE,
    );
-  
+
   //get a list of long text fields on the scientist content type so user can pick Recent Papers field
   $longtext_fields = array();
   if (!empty($scientist_ct)) {
-    $field_list = field_info_instances('node', $scientist_ct);
     foreach ($field_list as $field) {
       // we only want long text fields that have text processing enabled
       if ($field['widget']['type'] == 'text_textarea' && $field['settings']['text_processing'] == 1) {
@@ -112,9 +130,9 @@ function si_publications_settings_form($form, &$form_state) {
   return $form;
 }
 
-/** 
+/**
  * Implements hook_form_validate().
- * 
+ *
  */
 function si_publications_settings_form_validate($form, &$form_state) {
   //We need to ensure recent paper quantity is an integer between 1 and 10
@@ -124,7 +142,7 @@ function si_publications_settings_form_validate($form, &$form_state) {
   }
 }
 
-/** 
+/**
  * Implements hooks_form_submit().
  * code taken from system_settings_form_submit because it does important things, but we want to do our own important things too
  */
@@ -134,7 +152,7 @@ function si_publications_settings_form_submit($form, &$form_state) {
   if ( $form_state['values']['si_publications_scientist_ct'] != variable_get('si_publications_scientist_ct') ) {
     $form_state['values']['si_publications_si_profile_field'] = '';
     $form_state['values']['si_publications_recent_papers_field'] = '';
-    $form_state['values']['si_publications_cron_switch'] = 0; 
+    $form_state['values']['si_publications_cron_switch'] = 0;
     $form_state['values']['si_publications_altmetric_switch'] = 0;
   }
 
@@ -163,8 +181,7 @@ function si_publications_import_form($form, &$form_state) {
     );
     return $form;
   }
-  else
-  {
+  else {
     drupal_set_message('You must complete the setttings form <a href="/admin/content/publications/settings">here</a> before you can manually pull publications.', 'error');
   }
 }
@@ -177,7 +194,16 @@ function si_publications_import_form_submit($form, &$form_state) {
   //get staff nodes
   module_load_include('inc', 'si_publications', 'includes/si_publications.controller');
   $scientist_nids = si_publications_load_scientists();
-  $nodes = node_load_multiple($scientist_nids);
+
+  // Decide if we are nodes or users and pull appropriately
+  $nodes = null;
+  $scientist_ct = variable_get('si_publications_scientist_ct');
+  if ($scientist_ct == 'users') {
+    $nodes = user_load_multiple($scientist_nids);
+  }
+  else {
+    $nodes = node_load_multiple($scientist_nids);
+  }
 
   //fetch publications for each scientist
   foreach ($nodes as $node) {
