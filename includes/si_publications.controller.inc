@@ -167,7 +167,7 @@ function si_publications_format($unformatted_pub) {
   $pages      = isset($unformatted_pub['pages']) ? (', ' . $unformatted_pub['pages']) : null;
   $journal    = isset($unformatted_pub['journal']) ? ( '<em>' . $unformatted_pub['journal'] . '</em>' ) : null;
   // Add altmeric code. Whether or not it actually appears will be controlled by the "add altmetric" option in settings. If checked, this module's implementation of hook_node_view will add the altmetric JS and CSS to make it appear
-  $altmetric  = isset($unformatted_pub['doi']) ? '<div id="show_metric" class="altmetric-embed altmetricIcon" data-badge-type="donut" data-badge-popover="left" data-hide-no-mentions="true" data-doi="' . $doi_stripped = str_replace('http://dx.doi.org/', '', $unformatted_pub['doi']) . '"></div>' : null;
+  $altmetric  = isset($unformatted_pub['doi']) ? '<div id="show_metric" class="altmetric-embed altmetricIcon" data-badge-type="donut" data-badge-popover="left" data-hide-no-mentions="true" data-doi="' . $doi_stripped = preg_replace('/https?:\/\/(dx\.)?doi\.org\//', '', $unformatted_pub['doi']) . '"></div>' : null;
   //put the paper reference in our format
   $formatted_pub = $altmetric . $authors . ' ' . $date . '. ' . '<strong>' . $title . '</strong>. ' . $journal . $pages . '.' . $doi;
   return $formatted_pub; 
