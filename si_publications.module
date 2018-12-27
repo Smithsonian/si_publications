@@ -69,7 +69,7 @@ function si_publications_menu() {
     'access callback' => TRUE
   );
 
-  $items['user/%node/all-papers'] = array(
+  $items['user/%user/all-papers'] = array(
     // 'title' => t('All papers for @scientist'),
     'title callback' => 'get_all_papers_title',
     'title arguments' => array(1),
@@ -90,7 +90,15 @@ function si_publications_menu() {
 function get_all_papers_title($node) {
   $scientist_ct = variable_get('si_publications_scientist_ct');
   if ($scientist_ct == 'users') {
-    return t('All papers for @scientist' , array('@scientist' => $node->name));
+    $name = $node->name;
+    if (isset($node->field_first_name['und'])) {
+      if (isset($node->field_last_name['und'])) {
+        $name = $node->field_first_name['und'][0]['value'].' '.$node->field_last_name['und'][0]['value'];
+      } else {
+        $name = $node->field_first_name['und'][0]['value'];
+      }
+    }
+    return t('All papers for @scientist' , array('@scientist' => $name));
   }
   else {
     return t('All papers for @scientist' , array('@scientist' => $node->title));
@@ -164,9 +172,11 @@ function si_publications_node_view($node) {
 
     //we only want to add all papers link on scientists that both have a si profiles ID and some recent papers
     if (!empty($node->$si_profile_field) && !empty($node->{$recent_papers_field}) ) {
-      $link_to_papers = '/' . current_path() . '/all-papers';
-      $node->content[$recent_papers_field]['#suffix'] = '<div><a href="' . $link_to_papers . '">All Papers</a></div>';
-
+      $all_papers = variable_get('si_publications_all_papers_link_switch', 1);
+      if ($all_papers) {
+        $link_to_papers = '/' . current_path() . '/all-papers';
+        $node->content[$recent_papers_field]['#suffix'] = '<div><a href="' . $link_to_papers . '">All Papers</a></div>';
+      }
       // If altmetric is enabled, add it.
       add_altmetric();
     }
@@ -190,8 +200,12 @@ function si_publications_user_view($node) {
 
     //we only want to add all papers link on scientists that both have a si profiles ID and some recent papers
     if (!empty($node->$si_profile_field) && !empty($node->{$recent_papers_field}) ) {
-      $link_to_papers = '/' . current_path() . '/all-papers';
-      $node->content[$recent_papers_field]['#suffix'] = '<div><a href="' . $link_to_papers . '">All Papers</a></div>';
+
+      $all_papers = variable_get('si_publications_all_papers_link_switch', 1);
+      if ($all_papers) {
+        $link_to_papers = '/' . current_path() . '/all-papers';
+        $node->content[$recent_papers_field]['#suffix'] = '<div><a href="' . $link_to_papers . '">All Papers</a></div>';
+      }
 
       // If altmetric is enabled, add it.
       add_altmetric();

@@ -113,13 +113,20 @@ function si_publications_settings_form($form, &$form_state) {
     '#disabled' => ($longtext_fields && $text_fields) ? FALSE : TRUE,
   );
 
+  $form['si_publications_all_papers_link_switch'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Include a link to all papers.'),
+    '#default_value' => variable_get('si_publications_all_papers_link_switch'),
+    '#description' => t('Check this to include a link to <strong>All papers</strong> for a scientist.')
+  );
+
+
   $form['si_publications_altmetric_switch'] = array(
     '#type' => 'checkbox',
     '#title' => t('Include Altmetric icons next to citations'),
     '#default_value' => variable_get('si_publications_altmetric_switch'),
     '#disabled' => ($longtext_fields && $text_fields) ? FALSE : TRUE,
     '#description' => ($longtext_fields && $text_fields) ? t('<a href="https://www.altmetric.com/">Altmetric</a> is a 3rd party service that indicates how often a publication is used online. If you enable this feature, an icon will appear next to each publication that has a valid DOI.') : t('You cannot check this box until you have properly configured the content type and field settings above.'),
-
   );
 
   $form['submit'] =  array(
@@ -153,6 +160,7 @@ function si_publications_settings_form_submit($form, &$form_state) {
     $form_state['values']['si_publications_si_profile_field'] = '';
     $form_state['values']['si_publications_recent_papers_field'] = '';
     $form_state['values']['si_publications_cron_switch'] = 0;
+    $form_state['values']['si_publications_all_papers_link_switch'] = 1;
     $form_state['values']['si_publications_altmetric_switch'] = 0;
   }
 

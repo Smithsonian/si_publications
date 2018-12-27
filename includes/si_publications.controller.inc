@@ -79,7 +79,7 @@ function si_publications_fetch($node) {
   $url = variable_get('si_publications_api_url_field', 'http://staff.research.si.edu/search/');
   $data = array(
    'search' =>  $author_id,
-   'limit' => 'authorID',
+   'limit' => 'author_id',
   );
 
   $full_url = url($url, array('query' => $data));
@@ -143,11 +143,11 @@ function si_publications_fetch($node) {
         $message = null;
         if ($scientist_ct == 'users') {
           user_save($node);
-          $message = 'Successfully imported publications for ' . l($node->name, '/user/' . $node->uid, array('attributes' => array('target' => '_blank')));
+          $message = 'Successfully imported '.$n.' publications for ' . l($node->name, '/user/' . $node->uid, array('attributes' => array('target' => '_blank')));
         }
         else {
           node_save($node);
-          $message = 'Successfully imported publications for ' . l($node->title, '/node/' . $node->nid, array('attributes' => array('target' => '_blank')));
+          $message = 'Successfully imported '.$n.' publications for ' . l($node->title, '/node/' . $node->nid, array('attributes' => array('target' => '_blank')));
         }
         watchdog('si_publications', $message);
 
@@ -222,9 +222,10 @@ function si_publications_get_all_papers($node) {
   $scientist_ct = variable_get('si_publications_scientist_ct');
   $si_profile_field = variable_get('si_publications_si_profile_field');
 
+
    //check that this node we just loaded really is a scientist and that she has an SI profile ID
   if ($scientist_ct == 'users') {
-    if ($node->uid > 1 && !empty($node->{$si_profile_field})) ) {
+    if ($node->uid > 1 && empty($node->{$si_profile_field})) {
       drupal_not_found();
       drupal_exit();
     }
@@ -245,12 +246,15 @@ function si_publications_get_all_papers($node) {
   // $crumbs[] = l($node->title, 'conservation/' . $scientist);
   // drupal_set_breadcrumb($crumbs);
 
+
   //grab the si profiles ID and get the papers from SIL
   $si_profiles_id = $node->{$si_profile_field}['und'][0]['value'];
   $url = variable_get('si_publications_api_url_field', 'http://staff.research.si.edu/search/');
-  $url = $url.'?search=' . $si_profiles_id . '&limit=authorID&count=All';
+  $url = $url.'?search=' . $si_profiles_id . '&limit=author_id&count=all';
 
   $result = drupal_http_request($url);
+
+
 
   if ($result) {
     $result->data = preg_replace('/^\/\//','',$result->data);
@@ -269,12 +273,13 @@ function si_publications_get_all_papers($node) {
   //add altmetric functionality if enabled.
   $altmetric_set = add_altmetric();
 
-  foreach($pub as $unformatted_pub) {
+  foreach($pubs as $unformatted_pub) {
     //transform the array into a formatted string
     $formatted_pub = si_publications_format($unformatted_pub['reference']);
     // $altmetric  = ($altmetric_set && isset($unformatted_pub['doi'])) ? '<div id="show_metric" class="altmetric-embed altmetricIcon" data-badge-type="donut" data-badge-popover="left" data-hide-no-mentions="true" data-doi="' . $doi_stripped = str_replace('http://dx.doi.org/', '', $unformatted_pub['doi']) . '"></div>' : null;
     // $all_papers .= '<p class="paper-citation">' . $altmetric . $formatted_pub . '</p>';
     $all_papers .= '<p class="paper-citation">' . $formatted_pub . '</p>';
   }
+
   return $all_papers;
 }
