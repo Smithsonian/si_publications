@@ -11,6 +11,7 @@ function si_publications_uninstall() {
   variable_del('si_publications_cron_switch');
   variable_del('si_publications_papers_quantity');
   variable_del('si_publications_altmetric_switch');
+  variable_del('si_publications_all_papers_link_switch');
 
   // delete module queue
   $queue = DrupalQueue::get('si_publications');

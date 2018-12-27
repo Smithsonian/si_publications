@@ -208,15 +208,6 @@ function si_publications_format($unformatted_pub) {
  * Dynamically generates a list of all papers for the scientist and embeds on a page (does not store in db)
  */
 function si_publications_get_all_papers($node) {
-  // //get system path for this scientist (nzp specific)
-  // $alias = 'conservation/' . $scientist;
-  // if ( $path = drupal_lookup_path("source", $alias) ) {
-  //     $node = menu_get_object("node", 1, $path);
-  // }
-  // else {
-  //   // drupal_not_found();
-  //   // drupal_exit();
-  // }
 
   // fetch the scientist content type and SI profile ID field from this module's settings
   $scientist_ct = variable_get('si_publications_scientist_ct');
@@ -237,24 +228,12 @@ function si_publications_get_all_papers($node) {
     }
   }
 
-  //set breadcrumb (specific to NZP)
-  // $crumbs = array();
-  // $crumbs[] = l(t('Home'), '');
-  // $crumbs[] = l(t('Conservation'), 'conservation');
-  // $crumbs[] = l(t('About SCBI'), 'conservation/about-scbi');
-  // $crumbs[] = l(t('SCBI Staff'), 'conservation/scbi-staff');
-  // $crumbs[] = l($node->title, 'conservation/' . $scientist);
-  // drupal_set_breadcrumb($crumbs);
-
-
   //grab the si profiles ID and get the papers from SIL
   $si_profiles_id = $node->{$si_profile_field}['und'][0]['value'];
   $url = variable_get('si_publications_api_url_field', 'http://staff.research.si.edu/search/');
   $url = $url.'?search=' . $si_profiles_id . '&limit=author_id&count=all';
 
   $result = drupal_http_request($url);
-
-
 
   if ($result) {
     $result->data = preg_replace('/^\/\//','',$result->data);

@@ -103,17 +103,6 @@ function get_all_papers_title($node) {
   else {
     return t('All papers for @scientist' , array('@scientist' => $node->title));
   }
-
-  // Zoo specific code
-  ////add period to middle initial if any
-  // $name_array = explode('-', $nid);
-  // if ( count($name_array) == 3 && strlen($name_array[1]) == 1 )
-  // {
-  //   $name_array[1] .= '.';
-  // }
-  // $nid = implode(' ', $name_array);
-  // $nid = ucwords($nid);
-  // return t('All papers for @scientist' , array('@scientist' => $scientist));
 }
 
 /**
@@ -137,7 +126,7 @@ function si_publications_cron() {
         $queue->createItem($nid);
       }
    }
- }
+}
 
 function si_publications_cron_queue_info() {
   $queues['si_publications'] = array(

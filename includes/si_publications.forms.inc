@@ -155,7 +155,7 @@ function si_publications_settings_form_validate($form, &$form_state) {
  */
 function si_publications_settings_form_submit($form, &$form_state) {
 
- //if scientist content type has changed, clear all other stored vars because they are no longer valid
+  //if scientist content type has changed, clear all other stored vars because they are no longer valid
   if ( $form_state['values']['si_publications_scientist_ct'] != variable_get('si_publications_scientist_ct') ) {
     $form_state['values']['si_publications_si_profile_field'] = '';
     $form_state['values']['si_publications_recent_papers_field'] = '';
