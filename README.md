@@ -22,15 +22,16 @@ You must have created a "scientist" content type (it can be named anything you l
 Install as usual, see http://drupal.org/documentation/install/modules-themes/modules-7 for further information.
 
 ### CONFIGURATION
-Go to /admin/content/publications/settings and fill out the form.
+Go to **/admin/content/publications/settings** and fill out the form.
 
-1. Your Scientist Content Type: Select your "scientist" content type from the list of all your content types.
-2. Your SI profile ID field: Select your "SI profile ID" field from the listing of fields for the scientist content type.
-3. Your Recent Papers field: Select your "Recent Papers" field from the listing of fields for the scientist content type.
-4. Check the "Import via cron" box in order to get an up-to-date import every time a cron job runs.
-5. Number of papers to store for each scientist: The default is three (3), the maximum is ten (10).
-6. Include Altmetric icons next to citations: Check this box if you want an Altmetric badge to appear next to each publication that has a valid DOI.
-7. Once you save your publication import settings, you can go to the Publications Import tab at /admin/content/publications in order to run a manual import the first time.
-8. For each scientist record/node you should now see the three to ten recent papers imported into it. At the bottom of the record/node you should also see an "All Papers" link to an all papers node for that scientist.
+1. **Your Scientist Content Type**: Select your "scientist" content type from the list of all your content types.
+2. **Your SI profile ID field**: Select your "SI profile ID" field from the listing of fields for the scientist content type.
+3. **Your Recent Papers field**: Select your "Recent Papers" field from the listing of fields for the scientist content type.
+4. Check the **Import via cron** box in order to get an up-to-date import every time a cron job runs.
+5. **Number of papers to store for each scientist**: The default is three (3), the maximum is ten (10).
+6. **Include a link to All papers**: If you want a link at the bottom of the list of a scientists' publications.
+6. I**nclude Altmetric icons next to citations**: Check this box if you want an Altmetric badge to appear next to each publication that has a valid DOI.
+7. Once you save your publication import settings, you can go to the **Publications Import** tab at **/admin/content/publications** in order to run a manual import the first time.
+8. For each scientist you should now see the three to ten recent papers imported into it. At the bottom of the record/node you should also see an **All Papers** link to an all papers node for that scientist.
 
-If you checked the "Import via cron" box on the Publications Settings form above, you should get updated imports every time a cron job runs. If you did not check this box, you will need to run updated imports manually from the Publications Import tab.
+If you checked the **Import via cron** box on the Publications Settings form above, you should get updated imports every time a cron job runs. If you did not check this box, you will need to run updated imports manually from the Publications Import tab.
