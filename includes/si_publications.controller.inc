@@ -184,7 +184,7 @@ function si_publications_fetch($node) {
     }
   }
   catch (exception $e) {
-    $message = 'Tried importing publications for ' . $node->title . ' (using SI Profile ID ' . $author_id . ') and failed. '. $e->getMessage(). ' Query: '.print_r($data, true);
+    $message = 'Tried importing publications for ' . $node->title . ' (using SI Profile ID ' . $author_id . ') and failed. '. $e->getMessage();
     // drupal_set_message($message, 'error');
     watchdog('si_publications', $message);
     return $message;
@@ -221,7 +221,7 @@ function si_publications_format($unformatted_pub) {
  * Dynamically generates a list of all papers for the scientist and embeds on a page (does not store in db)
  */
 function si_publications_get_all_papers($node) {
-  watchdog('si_publications',"getting all pappers");
+
   // fetch the scientist content type and SI profile ID field from this module's settings
   $scientist_ct = variable_get('si_publications_scientist_ct');
   $si_profile_field = variable_get('si_publications_si_profile_field');
