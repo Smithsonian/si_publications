@@ -16,10 +16,10 @@ function si_publications_settings_form($form, &$form_state) {
 
   $form['si_publications_api_url_field'] = array(
     '#type' => 'textfield',
-    '#title' => t('URL to the API on the Smithsonian network. (default: http://staff.research.si.edu/search/) '),
+    '#title' => t('URL to the API on the Smithsonian network. (default: http://staff.research.si.edu/search2/publications/) '),
     '#required' => TRUE,
     '#size' => 60,
-    '#default_value' => variable_get('si_publications_api_url_field', 'http://staff.research.si.edu/search/'),
+    '#default_value' => variable_get('si_publications_api_url_field', 'http://staff.research.si.edu/search2/publications/'),
   );
 
   $options = node_type_get_names();
@@ -65,7 +65,7 @@ function si_publications_settings_form($form, &$form_state) {
     '#default_value' => $si_profile_field,
     '#description' => !empty($text_fields) ? t('Select your SI Profiles ID field. <strong>It must be a text field.</strong>') : t('The content type "@ct" does not contain any text fields. Please add one.', array('@ct' => $scientist_ct)),
     '#disabled' => empty($text_fields) ? TRUE : FALSE,
-    // '#required' => TRUE,
+    '#required' => TRUE,
    );
 
   //get a list of long text fields on the scientist content type so user can pick Recent Papers field
@@ -90,8 +90,8 @@ function si_publications_settings_form($form, &$form_state) {
     '#title' => t('Your Recent Papers field'),
     '#options' => !empty($longtext_fields) ? $longtext_fields : array(t('N/A')),
     '#default_value' => $recent_papers_field,
-    '#description' => !empty($longtext_fields) ? t('Select your Recent Papers field. <strong>It must be an unlimited value Long Text field. It also must allow HTML for formatting purposes.</strong>') : t('The content type "@ct" does not contain any long text, HTML-enabled, multivalue fields. Please add one. See the module readme for more information', array('@ct' => $scientist_ct)),
-    // '#required' => TRUE,
+    '#description' => !empty($longtext_fields) ? t('Select your Recent Papers field. <strong>It must be a <em>Long Text</em> Field, with <em>Filtered Text</em> selected, and <em>Number of Values</em> set to <em>Unlimited</em>.') : t('The content type "@ct" does not contain any long text, HTML-enabled, multivalue fields. Please add one. See the module readme for more information', array('@ct' => $scientist_ct)),
+    '#required' => TRUE,
     '#disabled' => empty($longtext_fields) ? TRUE : FALSE,
   );
 

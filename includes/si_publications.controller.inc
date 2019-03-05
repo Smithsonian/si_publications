@@ -73,10 +73,23 @@ function si_publications_fetch($node) {
     $paper_quantity = variable_get('si_publications_papers_quantity', 3);
   }
 
-  $author_id = $node->{$si_profile_field}['und'][0]['value'];
+  $author_id = null;
+  if (is_object($node)) {
+    if (isset($node->{$si_profile_field})) {
+      if (isset($node->{$si_profile_field}['und'])) {
+        if (isset($node->{$si_profile_field}['und'][0])) {
+          $author_id = $node->{$si_profile_field}['und'][0]['value'];
+        }
+      }
+    }
+  }
+
+  if (!$author_id) {
+    return "No Profiles ID found.";
+  }
 
   //set up SIL API call
-  $url = variable_get('si_publications_api_url_field', 'http://staff.research.si.edu/search/');
+  $url = variable_get('si_publications_api_url_field', 'http://staff.research.si.edu/search2/publications/');
   $data = array(
    'search' =>  $author_id,
    'limit' => 'author_id',
@@ -171,7 +184,7 @@ function si_publications_fetch($node) {
     }
   }
   catch (exception $e) {
-    $message = 'Tried importing publications for ' . $node->title . ' (using SI Profile ID ' . $author_id . ') and failed. ' . $e->getMessage();
+    $message = 'Tried importing publications for ' . $node->title . ' (using SI Profile ID ' . $author_id . ') and failed. '. $e->getMessage(). ' Query: '.print_r($data, true);
     // drupal_set_message($message, 'error');
     watchdog('si_publications', $message);
     return $message;
@@ -208,7 +221,7 @@ function si_publications_format($unformatted_pub) {
  * Dynamically generates a list of all papers for the scientist and embeds on a page (does not store in db)
  */
 function si_publications_get_all_papers($node) {
-
+  watchdog('si_publications',"getting all pappers");
   // fetch the scientist content type and SI profile ID field from this module's settings
   $scientist_ct = variable_get('si_publications_scientist_ct');
   $si_profile_field = variable_get('si_publications_si_profile_field');
@@ -230,7 +243,7 @@ function si_publications_get_all_papers($node) {
 
   //grab the si profiles ID and get the papers from SIL
   $si_profiles_id = $node->{$si_profile_field}['und'][0]['value'];
-  $url = variable_get('si_publications_api_url_field', 'http://staff.research.si.edu/search/');
+  $url = variable_get('si_publications_api_url_field', 'http://staff.research.si.edu/search2/');
   $url = $url.'?search=' . $si_profiles_id . '&limit=author_id&count=all';
 
   $result = drupal_http_request($url);

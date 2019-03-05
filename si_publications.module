@@ -98,10 +98,10 @@ function get_all_papers_title($node) {
         $name = $node->field_first_name['und'][0]['value'];
       }
     }
-    return t('All papers for @scientist' , array('@scientist' => $name));
+    return t('All publications for @scientist' , array('@scientist' => $name));
   }
   else {
-    return t('All papers for @scientist' , array('@scientist' => $node->title));
+    return t('All publications for @scientist' , array('@scientist' => $node->title));
   }
 }
 
@@ -115,6 +115,7 @@ function get_all_papers_title($node) {
  * For this module, we add the list of scientist node IDs that have SI profiles IDs, but only if the queue is empty. We want all scientists to be processed before we add new ones.
  */
 function si_publications_cron() {
+  $scientist_ct = variable_get('si_publications_scientist_ct');
    $queue = DrupalQueue::get('si_publications');
    $queue_length = $queue->numberOfItems();
    if (variable_get('si_publications_cron_switch') == 1 && $queue_length == 0) {
@@ -123,7 +124,7 @@ function si_publications_cron() {
       $nids = si_publications_load_scientists();
       // Put everything in a queue for processing.
       foreach($nids as $nid) {
-        $queue->createItem($nid);
+        $queue->createItem(array('nid' => $nid, 'type' => $scientist_ct));
       }
    }
 }
@@ -137,9 +138,14 @@ function si_publications_cron_queue_info() {
   return $queues;
 }
 
-function si_publications_cron_worker($nid) {
+function si_publications_cron_worker($info) {
   // load the scientist node
-  $node = node_load($nid);
+  $node = null;
+  if ($info['type'] == 'users') {
+    $node = user_load($info['nid']);
+  } else {
+    $node = node_load($info['nid']);
+  }
   module_load_include('inc', 'si_publications', 'includes/si_publications.controller');
   si_publications_fetch($node);
 }
