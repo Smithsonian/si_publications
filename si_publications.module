@@ -69,6 +69,17 @@ function si_publications_menu() {
     'access callback' => TRUE
   );
 
+  $items['user/%user/all-papers'] = array(
+    // 'title' => t('All papers for @scientist'),
+    'title callback' => 'get_all_papers_title',
+    'title arguments' => array(1),
+    'description' => 'All papers description',
+    'page callback' => 'si_publications_get_all_papers',
+    'page arguments' => array(1),
+    'file' => 'includes/si_publications.controller.inc',
+    'access callback' => TRUE
+  );
+
   return $items;
 }
 
@@ -77,18 +88,21 @@ function si_publications_menu() {
  *
  */
 function get_all_papers_title($node) {
-  return t('All papers for @scientist' , array('@scientist' => $node->title));
-  
-  // Zoo specific code 
-  ////add period to middle initial if any
-  // $name_array = explode('-', $nid);
-  // if ( count($name_array) == 3 && strlen($name_array[1]) == 1 )
-  // {
-  //   $name_array[1] .= '.';
-  // }
-  // $nid = implode(' ', $name_array);
-  // $nid = ucwords($nid);
-  // return t('All papers for @scientist' , array('@scientist' => $scientist));
+  $scientist_ct = variable_get('si_publications_scientist_ct');
+  if ($scientist_ct == 'users') {
+    $name = $node->name;
+    if (isset($node->field_first_name['und'])) {
+      if (isset($node->field_last_name['und'])) {
+        $name = $node->field_first_name['und'][0]['value'].' '.$node->field_last_name['und'][0]['value'];
+      } else {
+        $name = $node->field_first_name['und'][0]['value'];
+      }
+    }
+    return t('All publications for @scientist' , array('@scientist' => $name));
+  }
+  else {
+    return t('All publications for @scientist' , array('@scientist' => $node->title));
+  }
 }
 
 /**
@@ -101,6 +115,7 @@ function get_all_papers_title($node) {
  * For this module, we add the list of scientist node IDs that have SI profiles IDs, but only if the queue is empty. We want all scientists to be processed before we add new ones.
  */
 function si_publications_cron() {
+  $scientist_ct = variable_get('si_publications_scientist_ct');
    $queue = DrupalQueue::get('si_publications');
    $queue_length = $queue->numberOfItems();
    if (variable_get('si_publications_cron_switch') == 1 && $queue_length == 0) {
@@ -108,11 +123,11 @@ function si_publications_cron() {
       // load list of scientists with si profiles IDs
       $nids = si_publications_load_scientists();
       // Put everything in a queue for processing.
-      foreach($nids as $nid) { 
-        $queue->createItem($nid); 
-      } 
+      foreach($nids as $nid) {
+        $queue->createItem(array('nid' => $nid, 'type' => $scientist_ct));
+      }
    }
- }
+}
 
 function si_publications_cron_queue_info() {
   $queues['si_publications'] = array(
@@ -123,16 +138,21 @@ function si_publications_cron_queue_info() {
   return $queues;
 }
 
-function si_publications_cron_worker($nid) {
+function si_publications_cron_worker($info) {
   // load the scientist node
-  $node = node_load($nid);
+  $node = null;
+  if ($info['type'] == 'users') {
+    $node = user_load($info['nid']);
+  } else {
+    $node = node_load($info['nid']);
+  }
   module_load_include('inc', 'si_publications', 'includes/si_publications.controller');
   si_publications_fetch($node);
 }
 
 /**
- * Implements hook_field_prepare_view().
- * 
+ * Implements hook_node_view().
+ *
  * Adds a link to "all publications" below each scientists "recent papers" field.
  */
 function si_publications_node_view($node) {
@@ -144,17 +164,50 @@ function si_publications_node_view($node) {
     //get profiles id field and recent papers field
     $si_profile_field = variable_get('si_publications_si_profile_field');
     $recent_papers_field = variable_get('si_publications_recent_papers_field');
-  
+
     //we only want to add all papers link on scientists that both have a si profiles ID and some recent papers
     if (!empty($node->$si_profile_field) && !empty($node->{$recent_papers_field}) ) {
-      $link_to_papers = '/' . current_path() . '/all-papers';
-      $node->content[$recent_papers_field]['#suffix'] = '<div><a href="' . $link_to_papers . '">All Papers</a></div>';
+      $all_papers = variable_get('si_publications_all_papers_link_switch', 1);
+      if ($all_papers) {
+        $link_to_papers = '/' . current_path() . '/all-papers';
+        $node->content[$recent_papers_field]['#suffix'] = '<div><a href="' . $link_to_papers . '">All Papers</a></div>';
+      }
+      // If altmetric is enabled, add it.
+      add_altmetric();
+    }
+  }
+}
+
+/**
+ * Implements hook_user_view().
+ *
+ * Adds a link to "all publications" below each scientists "recent papers" field.
+ */
+function si_publications_user_view($node) {
+  // get scientist content type
+  $scientist_ct = variable_get('si_publications_scientist_ct');
+
+  // check that current node is a scientist
+  if ($scientist_ct == 'users') {
+    //get profiles id field and recent papers field
+    $si_profile_field = variable_get('si_publications_si_profile_field');
+    $recent_papers_field = variable_get('si_publications_recent_papers_field');
+
+    //we only want to add all papers link on scientists that both have a si profiles ID and some recent papers
+    if (!empty($node->$si_profile_field) && !empty($node->{$recent_papers_field}) ) {
+
+      $all_papers = variable_get('si_publications_all_papers_link_switch', 1);
+      if ($all_papers) {
+        $link_to_papers = '/' . current_path() . '/all-papers';
+        $node->content[$recent_papers_field]['#suffix'] = '<div><a href="' . $link_to_papers . '">All Papers</a></div>';
+      }
 
       // If altmetric is enabled, add it.
       add_altmetric();
     }
   }
 }
+
 
 // Checks to see whether the 'add altmetric' option is checked and if so, adds necessary code and styling then returns TRUE
 function add_altmetric() {
@@ -171,7 +224,7 @@ function add_altmetric() {
       'type' => 'external',
       'every_page' => FALSE,
     ));
-    // Add styling to 
+    // Add styling to
     drupal_add_css(
       '
       .altmetricIcon {
@@ -187,7 +240,7 @@ function add_altmetric() {
     );
     return TRUE;
   }
-   else {
+  else {
     drupal_add_css(
       '
       .altmetricIcon {

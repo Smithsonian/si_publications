@@ -4,12 +4,14 @@
  */
 function si_publications_uninstall() {
   // delete module variables
+  variable_del('si_publications_api_url_field');
   variable_del('si_publications_scientist_ct');
   variable_del('si_publications_si_profile_field');
   variable_del('si_publications_recent_papers_field');
   variable_del('si_publications_cron_switch');
   variable_del('si_publications_papers_quantity');
   variable_del('si_publications_altmetric_switch');
+  variable_del('si_publications_all_papers_link_switch');
 
   // delete module queue
   $queue = DrupalQueue::get('si_publications');
