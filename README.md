@@ -1,7 +1,7 @@
 SI publications
 ====================================
 
-This module was written by Anthony Braun at NZP. If you have any questions or want to help improve this module, please email me at brauna@si.edu
+This module was written by Anthony Braun at NZP. It is now maintained by Joel Richard. If you have any questions or want to help improve this module, please email me at richardjm@si.edu
 
 ### SUMMARY
  The SI Publications module allows you to import publications for your unit's scientists from Smithsonian Libraries. This can be done manually or automatically as a cron task using the Drupal queue API.
