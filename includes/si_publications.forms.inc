@@ -16,10 +16,10 @@ function si_publications_settings_form($form, &$form_state) {
 
   $form['si_publications_api_url_field'] = array(
     '#type' => 'textfield',
-    '#title' => t('URL to the API on the Smithsonian network. (default: http://staff.research.si.edu/search2/publications/) '),
+    '#title' => t('URL to the API on the Smithsonian network. (default: http://staff.research.si.edu/search-api/publications/) '),
     '#required' => TRUE,
     '#size' => 60,
-    '#default_value' => variable_get('si_publications_api_url_field', 'http://staff.research.si.edu/search2/publications/'),
+    '#default_value' => variable_get('si_publications_api_url_field', 'http://staff.research.si.edu/search-api/publications/'),
   );
 
   $options = node_type_get_names();
